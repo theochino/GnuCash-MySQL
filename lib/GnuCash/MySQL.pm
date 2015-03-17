@@ -4,6 +4,12 @@ use 5.018002;
 use strict;
 use warnings;
 
+use UUID::Tiny ':std';
+use DBI;
+use DateTime;
+use Carp;
+use Path::Tiny;
+
 require Exporter;
 
 our @ISA = qw(Exporter);
@@ -27,6 +33,60 @@ our @EXPORT = qw(
 
 our $VERSION = '0.01';
 
+### The module makes the connection to the DB.
+### This to me doesn't sound right ... the DB should already be passed opened.
+
+sub new {
+	my $class = shift;
+	my %attr = @_;
+	my $self = {};
+	
+	### Need to define the DB calls here to Mysql
+	croak 'No GnuCash MYSQL Db name defined.' unless defined( $attr{dbname} );
+	croak 'No GnuCash MYSQL DB Host defined.' unless defined( $attr{dbhost} );
+		
+	### Need to add a few checks to the DB
+	my $dbi_string = "dbi:mysql:" . $attr{dbname} . ":" . $attr{dbhost};
+	
+	$self->{db} = $attr{db};
+	$self->{dbh} = DBI->connect( $dbi_string, $attr{dbuser}, $attr{dbpass})
+									or die "Connection Error: $DBI::errstr\n";
+	
+	bless $self, $class;
+	return $self;
+}
+
+# Create a 32-character UUID
+sub create_guid {
+	my $uuid = create_uuid_as_string(UUID_V1);
+	$uuid =~ s/-//g;
+	return $uuid;
+}
+
+# Given an account name, return the GUID of the currency (aka commodity)
+# associated with that account
+sub commodity_guid {
+	my $self = shift;
+	my $account_name = shift;
+	my $sql = "SELECT commodity_guid FROM accounts " .
+						 "WHERE guid = " .	$self->account_guid_sql($account_name);
+	return $self->_runsql($sql)->[0][0];
+}
+
+# Given an SQL statement and optionally a list of arguments
+# execute the SQL with those arguments
+sub _runsql {
+	my $self = shift;
+	my ($sql,@args) = @_;
+	
+	my $sth = $self->{dbh}->prepare($sql);
+	$sth->execute(@args);
+	
+	my $data = $sth->fetchall_arrayref();
+	$sth->finish;
+	
+	return $data;
+}
 
 # Preloaded methods go here.
 
