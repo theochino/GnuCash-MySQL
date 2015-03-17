@@ -1,0 +1,6 @@
+Revision history for Perl extension GnuCash::MySQL.
+
+0.01  Tue Mar 17 13:23:41 2015
+	- original version; created by h2xs 1.23 with options
+		-XAn GnuCash::MySQL
+

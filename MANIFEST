@@ -1,0 +1,6 @@
+Changes
+Makefile.PL
+MANIFEST
+README
+t/GnuCash-MySQL.t
+lib/GnuCash/MySQL.pm
