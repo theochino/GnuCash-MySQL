@@ -63,13 +63,22 @@ sub create_guid {
 	return $uuid;
 }
 
+### Currency GUID
+sub currency_guid {
+	my $self = shift;
+	my $currency_mnemonic = shift;
+	my $sql = "SELECT guid FROM commodities " .
+						 "WHERE mnemonic = " .	$self->{dbh}->quote($currency_mnemonic);
+	return $self->_runsql($sql)->[0][0];
+}
+
 # Given an account name, return the GUID of the currency (aka commodity)
 # associated with that account
 sub commodity_guid {
 	my $self = shift;
 	my $account_name = shift;
 	my $sql = "SELECT commodity_guid FROM accounts " .
-						 "WHERE guid = " .	$self->account_guid_sql($account_name);
+						 "WHERE guid = " .	$self->account_guid_sql($account_name)	;
 	return $self->_runsql($sql)->[0][0];
 }
 
